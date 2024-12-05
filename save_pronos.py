@@ -5,7 +5,6 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 from colorama import Style
-from lxml import etree
 
 URL = "https://www.sospronostics.com/pronostics/"
 HEADERS = {
@@ -27,9 +26,8 @@ def load_existing_pronos(results_file: Path):
 
 webpage = requests.get(URL, headers=HEADERS)
 soup = BeautifulSoup(webpage.content, "html.parser")
-dom = etree.HTML(str(soup))
 
-pronos = dom.xpath("//article")
+pronos = soup.find_all("article")
 
 results_file = Path(RESULTS_FILE)
 existings_pronos = load_existing_pronos(results_file)
@@ -37,9 +35,11 @@ with results_file.open("a", encoding="utf-8") as f:
     for prono in pronos:
         elems = list(
             filter(
-                lambda e: e not in ["\n", "-", "Notre prono"], prono.xpath(".//text()")
+                lambda e: e.strip() not in ["", "-", "Notre prono"],
+                prono.get_text().splitlines(),
             )
         )
+        elems = list(map(str.strip, elems))
         elems = elems[:5]
         if elems[0] in existings_pronos:
             print(Style.DIM + str(elems) + Style.RESET_ALL)

@@ -7,4 +7,4 @@
 ### Run Docker image
 
     touch results
-    docker run -v ./results:/app/results sospronos
+    docker run -v ./results:/app/results --rm sospronos
